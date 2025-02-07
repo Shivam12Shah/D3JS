@@ -10,3 +10,27 @@
 .wick {
   stroke-width: 1;
 }
+
+.crosshair-line {
+  pointer-events: none; /* Prevent interference with mouse events */
+}
+
+.overlay {
+  fill: none;
+  pointer-events: all; /* Capture mouse events */
+}
+
+.tooltip rect {
+  fill: rgba(255, 255, 255, 0.9);
+}
+
+.tooltip text {
+  font-size: 12px;
+  fill: black;
+}
+
+
+
+.overlay {
+  cursor: move;
+}
