@@ -7,9 +7,9 @@ export default function CandlestickChart({
   width = 640,
   height = 400,
   marginTop = 20,
-  marginRight = 20,
-  marginBottom = 30,
-  marginLeft = 40
+  marginRight = 40,
+  marginBottom = 40,
+  marginLeft = 50
 }) {
   const gx = useRef();
   const gy = useRef();
@@ -35,7 +35,7 @@ export default function CandlestickChart({
 
   const yVolume = d3.scaleLinear()
     .domain([0, d3.max(parsedData, d => d.Volume)])
-    .range([height - marginBottom, height - marginBottom - 50]);
+    .range([height - marginBottom, height - marginBottom- 40]);
 
   useEffect(() => {
     d3.select(gx.current).call(d3.axisBottom(x));
@@ -44,11 +44,11 @@ export default function CandlestickChart({
 
   useEffect(() => {
     const svg = d3.select(svgRef.current);
-    const candleWidth = (width - marginLeft - marginRight) / parsedData.length * 0.8;
+    const candleWidth = (width - marginLeft) / parsedData.length * 0.5;
 
     const candles = svg.select(".candles").selectAll("g.candle").data(parsedData);
 
-    const enterCandles = candles.enter().append("g").attr("class", "candle");
+    const enterCandles = candles.enter().append("g").attr("class", "candle"); 
     enterCandles.append("line").attr("class", "wick");
     enterCandles.append("rect");
 
@@ -82,33 +82,36 @@ export default function CandlestickChart({
 
   useEffect(() => {
     const svg = d3.select(svgRef.current);
+  
     const zoomBehavior = d3.zoom()
-      .scaleExtent([1, 5])
-      .translateExtent([[marginLeft, marginTop], [width - marginRight, height - marginBottom]])
+      .scaleExtent([1, 5]) // Limit zoom scale
+      .translateExtent([[marginLeft, marginTop], [width - marginRight, height - marginBottom]]) // Prevents overflowing
+      .extent([[marginLeft, marginTop], [width - marginRight, height - marginBottom]])
       .on("zoom", (event) => {
         const newX = event.transform.rescaleX(x);
         const newY = event.transform.rescaleY(y);
         d3.select(gx.current).call(d3.axisBottom(newX));
         d3.select(gy.current).call(d3.axisLeft(newY));
-        
-        const originalCandleWidth = (width - marginLeft - marginRight) / parsedData.length * 0.8;
+  
+        const originalCandleWidth = (width - marginLeft) / parsedData.length * 0.5;
         const currentCandleWidth = originalCandleWidth * event.transform.k;
   
-        // Update candles
+        // Update candles with clamped positions
         svg.select(".candles").selectAll("g.candle")
-          .attr("transform", d => `translate(${newX(d.Date)}, 0)`)
+          .attr("transform", d => `translate(${Math.max(marginLeft, Math.min(newX(d.Date), width - marginRight))}, 0)`)
           .select("rect")
-            .attr("x", -currentCandleWidth / 2)
-            .attr("width", currentCandleWidth);
-        
-        // Update volume bars
+          .attr("x", -currentCandleWidth / 2)
+          .attr("width", currentCandleWidth);
+  
+        // Update volume bars with clamped positions
         svg.select(".volume").selectAll("rect")
-          .attr("x", d => newX(d.Date) - currentCandleWidth / 2)
+          .attr("x", d => Math.max(marginLeft, Math.min(newX(d.Date) - currentCandleWidth / 2, width - marginRight)))
           .attr("width", currentCandleWidth);
       });
-
+  
     svg.call(zoomBehavior);
   }, [x, y, yVolume]);
+  
 
   useEffect(() => {
     const svg = d3.select(svgRef.current);
@@ -128,10 +131,10 @@ export default function CandlestickChart({
   }, []);
 
   return (
-    <svg ref={svgRef} width={width} height={height}>
-      <g ref={gx} transform={`translate(0,${height - marginBottom})`} />
+    <svg ref={svgRef} width={width} height={height} >
       <g ref={gy} transform={`translate(${marginLeft},0)`} />
-      <g className="candles" />
+      <g ref={gx} transform={`translate(0,${height-30})`} />
+      <g className="candles"  />
       <g className="volume" ref={volumeRef} />
     </svg>
   );

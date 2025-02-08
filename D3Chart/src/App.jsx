@@ -56,9 +56,8 @@ const App = () => {
   }, []);
 
   return (
-    <div>
-      <CandleChart data={data} />
-     
+    <div className=" flex h-screen w-screen">
+      <CandleChart data={data}  />
     </div>
   )
 }

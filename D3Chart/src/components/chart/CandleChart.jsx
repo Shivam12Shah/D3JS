@@ -5,7 +5,7 @@ import LinePlot from '../D3/LinePlot';
 const CandleChart = () => {
     const [data, setData] = useState([]);
 
-    const svgRef = useRef();
+    const ref = useRef();
 
     const DrawChart = (data,
         width = 640,
@@ -18,24 +18,19 @@ const CandleChart = () => {
             const x = d3.scaleLinear([0, data.length - 1], [marginLeft, width - marginRight]);
             const y = d3.scaleLinear(d3.extent(data), [height - marginBottom, marginTop]);
             
-            const line = d3.line((d, i) => x(i), y);
-
+           
 
     }
 
     useEffect(() => {
+        console.log(ref?.current?.clientWidth,ref?.current?.clientHeight);
+        
         d3.csv("../../../src/data.csv").then((rawData) => {
 
-            const width = 800;
-            const height = 500;
-          console.log(rawData);
+        
           
 
-            const svg = d3
-                .select(svgRef.current)
-                .attr("width", width)
-                .attr("height", height)
-                .attr("viewBox", [0, 0, width, height]);
+    
 
             DrawChart(rawData)
             setData(rawData)
@@ -47,7 +42,9 @@ const CandleChart = () => {
 
 
     return (
-        <LinePlot data={data}  />
+       <div className='flex-1' ref={ref}>
+         <LinePlot data={data} width={ref?.current?.clientWidth || 400} height={ref?.current?.clientHeight || 640}  />
+       </div>
     )
 }
 
